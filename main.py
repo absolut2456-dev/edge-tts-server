@@ -1,7 +1,6 @@
-﻿pythonfrom fastapi import FastAPI, Query
+from fastapi import FastAPI, Query
 from fastapi.responses import StreamingResponse
 import edge_tts
-import asyncio
 import io
 
 app = FastAPI()
@@ -23,14 +22,11 @@ async def tts(
 ):
     voice_key = f"{lang}_{category}" if f"{lang}_{category}" in VOICES else lang
     voice = VOICES.get(voice_key, VOICES.get(lang, "ru-RU-DmitryNeural"))
-    
     communicate = edge_tts.Communicate(text, voice)
-    
     audio_buffer = io.BytesIO()
     async for chunk in communicate.stream():
         if chunk["type"] == "audio":
             audio_buffer.write(chunk["data"])
-    
     audio_buffer.seek(0)
     return StreamingResponse(
         audio_buffer,
